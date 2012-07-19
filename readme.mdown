@@ -176,4 +176,8 @@ This will return an array of triggered events, which can be used for debugging. 
 This will reset all internal arrays. You can use that to empty all form fields after submit. 
 
 
+## License: 
+
+MIT License - <http://www.opensource.org/licenses/mit-license.php>
+
 
