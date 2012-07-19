@@ -1,0 +1,179 @@
+# Submission Class
+
+A simple form submission handler for PHP
+
+## Why? 
+
+Handling form submissions is always a pain in the ass and I keep writing things over and over again. This is a class I think might stick as the default way to build upon – at least for me. 
+
+## Usage
+
+```php
+
+
+// this is a very simple demo of a contact form
+$submission = new Submission(array(
+
+  // set the required fields
+  'required' => array('name', 'email', 'text'),
+    
+  // make sure that the final data array contains only
+  // the fields we want to further use.
+  'keep' => array('name', 'email', 'text'),
+
+  // setup a validation event
+  'validate' => function($self) {
+
+    // sanitize data
+    $self->value('email', filter_var($self->value('email'), FILTER_SANITIZE_EMAIL));
+    $self->value('name',  trim(strip_tags($self->value('name'))));
+    $self->value('text',  trim(strip_tags($self->value('text'))));
+        
+    // validate the email address
+    if(!filter_var($self->value('email'), FILTER_VALIDATE_EMAIL)) $self->addInvalid('email');  
+        
+  },
+
+  'submit' => function($self) {
+    
+    // normally you would save something in a database
+    // here or send data via email. 
+    // you can then trigger an error or…
+        
+    $self->trigger('success');
+           
+  },
+
+  'success' => function($self) {
+    // send to the "Thank you" page
+    header('Location:?thankyou');
+  },
+
+  'error' => function($self) {
+    $self->alert('Please make sure to fill in all fields correctly!');
+  }
+
+));
+
+
+```
+
+Here's a demo including the Form HTML: http://bastianallgeier.com/submission
+
+## Options
+
+### method: 
+
+Define the request method here. Can be post or get. 
+
+### ajax: 
+
+If set to true, all form events will only be triggered on Ajax calls. 
+
+### required: 
+
+An array of required fields
+
+### keep: 
+
+An array of fields, you want to keep. Everything else, which is submitted will be excluded from the form data array. 
+
+## Events: 
+
+Events are defined as closures, which are available since PHP 5.3. They work like you would expect from Javascript for example: 
+
+```php
+$submission = new Submission(array(
+  'success' => function($self) {
+    // this code is triggered on success
+  }
+));
+
+```
+
+But be aware that `$this` is not available in Closures. That's why the first argument of each event is a reference to the Submission class (`$self`)
+
+### filter: 
+
+A filter event. Can be used to filter the data array some more. 
+
+### validate: 
+
+A validation event. Validate all incoming data here and raise an error if one of the fields is not valid. 
+
+### submit:
+
+The main submit event, which happens after filter and validate. This can be used to actually do something with the submitted data – save it in a database or send and email or whatever. 
+
+### success: 
+
+A success event. Define here what happens when the form has been submitted successfully. 
+
+### error: 
+
+An error event. You can use this to react on any error during submission. You can even trigger that in all other events, maybe when you can't write data to the db or something like that. 
+
+## Methods: 
+
+### $submission->isRequired($field)
+
+Checks if a given field is required
+
+### $submission->isMissing($field)
+
+Checks if a given field is missing
+
+### $submission->addMissing($field)
+
+Mark a field as missing
+
+### $submission->isInvalid($field)
+
+Checks if a given field is invalid
+
+### $submission->addInvalid($field)
+
+Mark a field as invalid
+
+### $submission->isError($field = null)
+
+Checks if a given field is marked as error. If no field is specified, this will serve as error check for the entire form. 
+
+### $submission->errors() 
+
+This returns an array with all fields, which have been marked as error. 
+
+### $submission->isSubmitted() 
+
+Checks if the form has been submitted
+
+### $submission->value($field, $value=null)
+
+Get the value of a field. This can be used as setter if you pass a value with the second argument. 
+
+### $submission->htmlValue($field)
+
+Get a sanitized version of a field value. 
+
+### $submission->alert($value=null)
+
+Get the alert message. This can also be used as setter if you pass a value. 
+
+### $submission->data($key=null, $value=null)
+
+This can either get the entire data if you pass no arguments. It can be a getter of a single value if you pass the field name as first argument or it can be a setter if you pass the field name and a value. 
+
+### $submission->trigger($event, $args=array())
+
+This triggers a form event. Arguments can be passed as array with the second argument. 
+
+### $submission->triggered($event = null)
+
+This will return an array of triggered events, which can be used for debugging. You can also pass the event name as first argument to get only that event from the event log. 
+
+### $submission->reset() 
+
+This will reset all internal arrays. You can use that to empty all form fields after submit. 
+
+
+
