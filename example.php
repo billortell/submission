@@ -3,6 +3,7 @@
 require('submission.php');
 
 // this is a very simple demo of a contact form
+// you can find a working demo of this here: http://bastianallgeier.com/submission/
 $submission = new Submission(array(
 
   // set the required fields
